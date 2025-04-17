@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { getGeminiResponse, getGeminiStreamResponse } from '@/services/geminiService';
+import { getStockAnalysisFromGemini, getNewsAnalysis, getSECFilingsAnalysis } from '@/services/geminiService';
 
 export const useGemini = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getResponse = async (prompt: string) => {
+  const getStockAnalysis = async (symbol: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getGeminiResponse(prompt);
-      return response;
+      const analysis = await getStockAnalysisFromGemini(symbol);
+      return analysis;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
@@ -19,12 +19,26 @@ export const useGemini = () => {
     }
   };
 
-  const getStreamResponse = async (prompt: string) => {
+  const getNews = async (symbol: string) => {
     try {
       setLoading(true);
       setError(null);
-      const stream = await getGeminiStreamResponse(prompt);
-      return stream;
+      const news = await getNewsAnalysis(symbol);
+      return news;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSECFilings = async (symbol: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const filings = await getSECFilingsAnalysis(symbol);
+      return filings;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
@@ -34,8 +48,9 @@ export const useGemini = () => {
   };
 
   return {
-    getResponse,
-    getStreamResponse,
+    getStockAnalysis,
+    getNews,
+    getSECFilings,
     loading,
     error
   };
