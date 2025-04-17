@@ -26,7 +26,7 @@ export const fetchStockData = async (query: string): Promise<StockData> => {
         messages: [
           {
             role: "system", 
-            content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Provide financial metrics, growth indicators, risk factors, and recent news in a structured format."
+            content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Provide financial metrics, growth indicators, risk factors, and recent news in a structured format. Return data in markdown tables and tweet-like news updates."
           },
           { 
             role: "user", 
