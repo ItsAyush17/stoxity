@@ -1,33 +1,40 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
 import { StockInsightTabs } from "@/components/StockInsightTabs";
 import { EmptyState } from "@/components/EmptyState";
-import { mockApiCall } from "@/services/mockData";
 import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { fetchStockData, getDeepSeekApiKey, setDeepSeekApiKey } from "@/services/deepSeekService";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasApiKey, setHasApiKey] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check for API key on component mount
+    const apiKey = getDeepSeekApiKey();
+    setHasApiKey(!!apiKey);
+  }, []);
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app, this would make an API call to your backend
-      // which would use your securely stored API key
-      const data = await mockApiCall(query);
+      const data = await fetchStockData(query);
       setStockData(data);
-    } catch (err) {
-      setError("Failed to fetch stock data. Please try again.");
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to fetch stock data. Please try again.";
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to fetch stock data. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       console.error("Search error:", err);
@@ -36,11 +43,28 @@ const Index = () => {
     }
   };
 
+  const handleApiKeySubmit = (apiKey: string) => {
+    setDeepSeekApiKey(apiKey);
+    setHasApiKey(true);
+    toast({
+      title: "Success",
+      description: "API key has been set successfully.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <StoxityHeader />
       
       <main className="container mx-auto px-4 pb-16">
+        {!hasApiKey && (
+          <div className="max-w-3xl mx-auto my-8 p-4 bg-yellow-100 border border-yellow-300 rounded-md">
+            <h3 className="font-bold mb-2">DeepSeek API Key Required</h3>
+            <p className="mb-4">To analyze stocks with real data, please provide your DeepSeek API key.</p>
+            <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
+          </div>
+        )}
+        
         <StockSearchForm onSearch={handleSearch} isLoading={isLoading} />
         
         {error && (
@@ -58,7 +82,7 @@ const Index = () => {
                 <div className="font-mono text-xl">[Analyzing]</div>
               </div>
               <p className="text-muted-foreground font-mono text-sm">
-                Retrieving and analyzing SEC filings and earnings reports...
+                Retrieving and analyzing live market data...
               </p>
             </div>
           </div>
@@ -70,7 +94,7 @@ const Index = () => {
         
         <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t">
           <p className="mb-1">Stoxity - AI-powered retro stock insights</p>
-          <p>Data provided for demonstration purposes only</p>
+          <p>Powered by DeepSeek AI</p>
         </footer>
       </main>
     </div>

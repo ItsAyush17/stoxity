@@ -12,7 +12,7 @@ interface ApiKeyInputProps {
 
 export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
   const [apiKey, setApiKey] = useState("");
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,18 +27,18 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Key className="h-4 w-4" />
-          <span>API Key</span>
+          <span>Set DeepSeek API Key</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Enter API Key</DialogTitle>
+          <DialogTitle>Enter DeepSeek API Key</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <Alert variant="default" className="bg-retro-yellow/30 border-amber-300">
             <AlertCircle className="h-4 w-4 text-amber-500" />
             <AlertDescription>
-              Your API key is required for analysis functionality. We don't store your key.
+              Your DeepSeek API key is required for live stock analysis. The key is stored locally in your browser and not sent to our servers.
             </AlertDescription>
           </Alert>
           
@@ -46,7 +46,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
             <Input
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Enter your API key here..."
+              placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
               className="font-mono"
               type="password"
             />
