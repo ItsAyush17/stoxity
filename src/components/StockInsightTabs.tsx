@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InsightTable } from "./InsightTable";
 import { InsightTweets } from "./InsightTweets";
-import { FileText, FileBadge, AlertCircle } from "lucide-react";
+import { FileText, FileBadge } from "lucide-react";
 import { StockData } from "@/types";
 
 interface StockInsightTabsProps {
