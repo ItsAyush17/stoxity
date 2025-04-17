@@ -1,76 +1,60 @@
 import { StockData, InsightItem, TweetInsight } from "@/types";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface GeminiAnalysisRequest {
   stockSymbol: string;
+  apiKey: string;
 }
 
 interface GeminiResponse {
   data: StockData;
 }
 
-// This function will be used to call the backend API
+// Initialize the Gemini API
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+
+// This function will be used to call the Gemini API
 export const getStockAnalysisFromGemini = async (
-  symbol: string
+  symbol: string,
+  apiKey: string
 ): Promise<StockData> => {
   try {
-    const response = await fetch(`/api/stock-analysis/${symbol}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    
+    const prompt = `Analyze the stock ${symbol} and provide a structured response with:
+    1. Company name
+    2. Financial metrics (revenue, profit, etc.)
+    3. Growth indicators
+    4. Risk factors
+    5. Recent news/tweets
+    
+    Format the response as a JSON object matching this structure:
+    {
+      "symbol": string,
+      "name": string,
+      "insights": {
+        "financials": [{ "metric": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }],
+        "growth": [{ "metric": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }],
+        "risks": [{ "metric": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }]
       },
-    });
+      "tweets": [{ "id": string, "content": string, "category": "financial"|"growth"|"risk", "timestamp": string }]
+    }`;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    try {
+      // Parse the JSON response
+      const parsedData = JSON.parse(text);
+      return parsedData as StockData;
+    } catch (parseError) {
+      console.error("Error parsing Gemini response:", parseError);
+      throw new Error("Failed to parse stock analysis data");
     }
-
-    const data = await response.json();
-    return data as StockData;
   } catch (error) {
-    console.error("Error fetching stock analysis:", error);
-    throw new Error("Failed to fetch stock analysis");
-  }
-};
-
-// Function to get news analysis
-export const getNewsAnalysis = async (symbol: string) => {
-  try {
-    const response = await fetch(`/api/news-analysis/${symbol}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching news analysis:", error);
-    throw new Error("Failed to fetch news analysis");
-  }
-};
-
-// Function to get SEC filings analysis
-export const getSECFilingsAnalysis = async (symbol: string) => {
-  try {
-    const response = await fetch(`/api/sec-filings/${symbol}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching SEC filings analysis:", error);
-    throw new Error("Failed to fetch SEC filings analysis");
+    console.error("Error calling Gemini API:", error);
+    throw new Error("Failed to analyze stock data using Gemini API");
   }
 };
 
