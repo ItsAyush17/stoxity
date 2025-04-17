@@ -1,34 +1,35 @@
-
-import { StockSuggestion } from "@/types";
+import { StockData, StockSuggestion } from "@/types";
+import { fetchStockData } from "./deepseekService";
 
 // Mock stock suggestions data
-const stockSuggestions: StockSuggestion[] = [
+const STOCK_SUGGESTIONS: StockSuggestion[] = [
   { symbol: "AAPL", name: "Apple Inc." },
   { symbol: "MSFT", name: "Microsoft Corporation" },
-  { symbol: "AMZN", name: "Amazon.com Inc." },
   { symbol: "GOOGL", name: "Alphabet Inc." },
+  { symbol: "AMZN", name: "Amazon.com Inc." },
   { symbol: "META", name: "Meta Platforms Inc." },
   { symbol: "TSLA", name: "Tesla Inc." },
   { symbol: "NVDA", name: "NVIDIA Corporation" },
-  { symbol: "JNJ", name: "Johnson & Johnson" },
+  { symbol: "JPM", name: "JPMorgan Chase & Co." },
   { symbol: "V", name: "Visa Inc." },
-  { symbol: "WMT", name: "Walmart Inc." }
+  { symbol: "JNJ", name: "Johnson & Johnson" }
 ];
 
-export const searchStocks = (query: string): StockSuggestion[] => {
-  if (!query) return [];
+export const getStockSuggestions = (query: string): StockSuggestion[] => {
+  if (!query) return STOCK_SUGGESTIONS;
   
-  const lowerCaseQuery = query.toLowerCase();
-  return stockSuggestions.filter(stock => 
-    stock.symbol.toLowerCase().includes(lowerCaseQuery) || 
-    stock.name.toLowerCase().includes(lowerCaseQuery)
-  ).slice(0, 5); // Return top 5 matches
+  const normalizedQuery = query.toLowerCase();
+  return STOCK_SUGGESTIONS.filter(
+    stock => 
+      stock.symbol.toLowerCase().includes(normalizedQuery) ||
+      stock.name.toLowerCase().includes(normalizedQuery)
+  );
 };
 
-export const validateStockSymbol = (query: string): boolean => {
-  const lowerCaseQuery = query.toLowerCase();
-  return stockSuggestions.some(stock => 
-    stock.symbol.toLowerCase() === lowerCaseQuery || 
-    stock.name.toLowerCase() === lowerCaseQuery
-  );
+export const getStockData = async (query: string): Promise<StockData> => {
+  // Extract symbol from query (could be symbol or company name)
+  const suggestion = getStockSuggestions(query)[0];
+  const symbol = suggestion?.symbol || query.toUpperCase();
+  
+  return fetchStockData(symbol);
 };
