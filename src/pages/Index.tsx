@@ -7,16 +7,23 @@ import { EmptyState } from "@/components/EmptyState";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { mockApiCall } from "@/services/mockData";
 import { StockData } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleSearch = async (query: string) => {
     if (!apiKey) {
       setError("API key is required. Please add your API key.");
+      toast({
+        title: "API Key Required",
+        description: "Please add your API key to continue.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -30,6 +37,11 @@ const Index = () => {
       setStockData(data);
     } catch (err) {
       setError("Failed to fetch stock data. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to fetch stock data. Please try again.",
+        variant: "destructive",
+      });
       console.error("Search error:", err);
     } finally {
       setIsLoading(false);
@@ -39,6 +51,10 @@ const Index = () => {
   const handleApiKeySubmit = (key: string) => {
     setApiKey(key);
     setError(null);
+    toast({
+      title: "API Key Saved",
+      description: "Your API key has been saved successfully.",
+    });
   };
 
   return (

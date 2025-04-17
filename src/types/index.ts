@@ -23,3 +23,8 @@ export interface TweetInsight {
   category: "financial" | "growth" | "risk";
   timestamp: string;
 }
+
+export interface StockSuggestion {
+  symbol: string;
+  name: string;
+}
