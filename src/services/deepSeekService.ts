@@ -1,6 +1,7 @@
 
 import { StockData, StockSuggestion } from "@/types";
 import { extractDataFromResponse } from "@/utils/responseParser";
+import { mockApiCall } from "./mockData";
 
 // API key should ideally be stored in environment variables or user input
 let apiKey = "sk-0df192262b5c40b1ac46f00c16d5c417";
@@ -42,21 +43,22 @@ export const fetchStockData = async (query: string): Promise<StockData> => {
         messages: [
           {
             role: "system", 
-            content: "You are a financial analyst assistant. Provide detailed stock analysis for the given company or ticker symbol. Include financial metrics, growth indicators, risk factors, and recent news in a structured format."
+            content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Provide financial metrics, growth indicators, risk factors, and recent news in a structured format."
           },
           { 
             role: "user", 
-            content: `Provide a comprehensive analysis of ${query} stock. Include current financial data, growth metrics, risk assessment, and recent relevant news. Format the response in JSON.` 
+            content: `Analyze earnings calls, SEC filings, and recent news for ${query}. Provide a comprehensive analysis including current financial data, growth metrics, and risk assessment. Format the response in JSON with three sections: 'financials', 'growth', and 'risks' (each with metrics, values, changes, and trends), plus a 'news' section with categorized insights.` 
           }
         ],
         temperature: 0.5,
-        max_tokens: 2000
+        max_tokens: 4000
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`API request failed with status ${response.status}: ${JSON.stringify(errorData)}`);
+      console.error("API Error:", errorData);
+      throw new Error(`API request failed with status ${response.status}`);
     }
 
     const data = await response.json();
@@ -66,12 +68,18 @@ export const fetchStockData = async (query: string): Promise<StockData> => {
     return extractDataFromResponse(data, query);
   } catch (error) {
     console.error("Error fetching stock data:", error);
+    
+    // If we're in development mode or DeepSeek API fails, fall back to mock data
+    if (import.meta.env.DEV || error instanceof Error && error.message.includes("API request failed")) {
+      console.log("Falling back to mock data");
+      return mockApiCall(query);
+    }
+    
     throw error;
   }
 };
 
-// Real stock suggestions based on market data
-// This is a simplified list, in a real app you might fetch this from an API
+// For search suggestions - expanded list of popular stocks
 const popularStocks: StockSuggestion[] = [
   { symbol: "AAPL", name: "Apple Inc." },
   { symbol: "MSFT", name: "Microsoft Corporation" },
@@ -87,7 +95,12 @@ const popularStocks: StockSuggestion[] = [
   { symbol: "PG", name: "Procter & Gamble Co." },
   { symbol: "PYPL", name: "PayPal Holdings Inc." },
   { symbol: "DIS", name: "The Walt Disney Company" },
-  { symbol: "NFLX", name: "Netflix Inc." }
+  { symbol: "NFLX", name: "Netflix Inc." },
+  { symbol: "INTC", name: "Intel Corporation" },
+  { symbol: "HD", name: "Home Depot Inc." },
+  { symbol: "VZ", name: "Verizon Communications" },
+  { symbol: "KO", name: "Coca-Cola Company" },
+  { symbol: "MCD", name: "McDonald's Corporation" }
 ];
 
 export const searchStocks = (query: string): StockSuggestion[] => {
@@ -100,10 +113,10 @@ export const searchStocks = (query: string): StockSuggestion[] => {
   ).slice(0, 5); // Return top 5 matches
 };
 
+// Modified to always return true - allow any company or ticker input
 export const validateStockSymbol = (query: string): boolean => {
-  const lowerCaseQuery = query.toLowerCase();
-  return popularStocks.some(stock => 
-    stock.symbol.toLowerCase().includes(lowerCaseQuery) || 
-    stock.name.toLowerCase().includes(lowerCaseQuery)
-  );
+  if (query && query.trim().length > 0) {
+    return true; // Allow any non-empty input
+  }
+  return false;
 };

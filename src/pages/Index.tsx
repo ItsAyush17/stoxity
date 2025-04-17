@@ -13,13 +13,21 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasApiKey, setHasApiKey] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(true); // Default to true since we have the API key
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for API key on component mount
-    const apiKey = getDeepSeekApiKey();
-    setHasApiKey(!!apiKey);
+    // Set the API key programmatically
+    const apiKey = "sk-0df192262b5c40b1ac46f00c16d5c417";
+    setDeepSeekApiKey(apiKey);
+    setHasApiKey(true);
+    
+    // Check URL params for direct stock query
+    const params = new URLSearchParams(window.location.search);
+    const stockQuery = params.get('q');
+    if (stockQuery) {
+      handleSearch(stockQuery);
+    }
   }, []);
 
   const handleSearch = async (query: string) => {
@@ -27,6 +35,11 @@ const Index = () => {
     setError(null);
     
     try {
+      // Update URL to enable sharing of search results
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', query);
+      window.history.replaceState({}, '', url);
+      
       const data = await fetchStockData(query);
       setStockData(data);
     } catch (err: any) {
@@ -82,7 +95,7 @@ const Index = () => {
                 <div className="font-mono text-xl">[Analyzing]</div>
               </div>
               <p className="text-muted-foreground font-mono text-sm">
-                Retrieving and analyzing live market data...
+                Retrieving and analyzing SEC filings, earnings calls, and news...
               </p>
             </div>
           </div>
@@ -93,7 +106,7 @@ const Index = () => {
         )}
         
         <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t">
-          <p className="mb-1">Stoxity - AI-powered retro stock insights</p>
+          <p className="mb-1">Stoxity - AI-powered stock insights from SEC filings & earnings calls</p>
           <p>Powered by DeepSeek AI</p>
         </footer>
       </main>

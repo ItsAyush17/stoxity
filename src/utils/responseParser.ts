@@ -26,7 +26,11 @@ export const extractDataFromResponse = (apiResponse: any, query: string): StockD
         // Third try: look for any object-like structure
         const objectMatch = content.match(/\{[\s\S]*?\}/);
         if (objectMatch) {
-          jsonData = JSON.parse(objectMatch[0]);
+          try {
+            jsonData = JSON.parse(objectMatch[0]);
+          } catch (e) {
+            throw new Error("Could not extract JSON from API response");
+          }
         } else {
           throw new Error("Could not extract JSON from API response");
         }
@@ -35,16 +39,20 @@ export const extractDataFromResponse = (apiResponse: any, query: string): StockD
     
     console.log("Extracted JSON data:", jsonData);
     
+    // Normalize ticker and name
+    const symbol = (jsonData.symbol || jsonData.ticker || query).toUpperCase();
+    const name = jsonData.name || jsonData.company_name || `${symbol}`;
+    
     // Convert the parsed data to our StockData format
     const stockData: StockData = {
-      symbol: jsonData.symbol || query.toUpperCase(),
-      name: jsonData.name || `${query.toUpperCase()} Corporation`,
+      symbol,
+      name,
       insights: {
-        financials: parseInsightItems(jsonData.financials || jsonData.financial || []),
-        growth: parseInsightItems(jsonData.growth || []),
-        risks: parseInsightItems(jsonData.risks || jsonData.risk_factors || [])
+        financials: parseInsightItems(jsonData.financials || jsonData.financial || jsonData.financial_metrics || []),
+        growth: parseInsightItems(jsonData.growth || jsonData.growth_metrics || jsonData.growth_indicators || []),
+        risks: parseInsightItems(jsonData.risks || jsonData.risk_factors || jsonData.risk_assessment || [])
       },
-      tweets: parseTweets(jsonData.news || jsonData.tweets || [])
+      tweets: parseTweets(jsonData.news || jsonData.tweets || jsonData.insights || [])
     };
     
     return stockData;
@@ -60,21 +68,29 @@ const parseInsightItems = (items: any[]): InsightItem[] => {
     return [];
   }
   
-  return items.map(item => ({
-    metric: item.metric || item.name || item.factor || "Unknown",
-    value: item.value || "N/A",
-    change: item.change || item.impact || "Unknown",
-    trend: determineTrend(item.trend || item.direction || item.change)
-  })).slice(0, 5); // Limit to 5 items
+  return items.map(item => {
+    // Handle different possible property names
+    const metric = item.metric || item.name || item.factor || item.title || item.key || "Unknown";
+    const value = item.value || item.data || item.figure || "N/A";
+    const change = item.change || item.impact || item.delta || item.trend_value || "Unknown";
+    const trend = determineTrend(item.trend || item.direction || item.change || item.sentiment || item.movement);
+    
+    return {
+      metric,
+      value,
+      change,
+      trend
+    };
+  }).slice(0, 5); // Limit to 5 items
 };
 
 const determineTrend = (trendValue: any): "up" | "down" | "neutral" => {
   if (!trendValue) return "neutral";
   
   const trend = String(trendValue).toLowerCase();
-  if (trend.includes("up") || trend.includes("positive") || trend.includes("+") || trend.includes("increase")) {
+  if (trend.includes("up") || trend.includes("positive") || trend.includes("+") || trend.includes("increase") || trend.includes("growing") || trend.includes("bullish")) {
     return "up";
-  } else if (trend.includes("down") || trend.includes("negative") || trend.includes("-") || trend.includes("decrease")) {
+  } else if (trend.includes("down") || trend.includes("negative") || trend.includes("-") || trend.includes("decrease") || trend.includes("declining") || trend.includes("bearish")) {
     return "down";
   }
   return "neutral";
@@ -86,19 +102,30 @@ const parseTweets = (newsItems: any[]) => {
   }
   
   return newsItems.map((item, index) => {
-    const categoryMap: { [key: string]: "financial" | "growth" | "risk" } = {
-      "financial": "financial",
-      "growth": "growth",
-      "risk": "risk"
-    };
+    // Try to determine the category
+    let categoryRaw = item.category || item.type || item.topic || "";
+    let category: "financial" | "growth" | "risk" = "financial";
     
-    const category = categoryMap[item.category?.toLowerCase()] || "financial";
+    if (typeof categoryRaw === "string") {
+      const lowerCategory = categoryRaw.toLowerCase();
+      if (lowerCategory.includes("risk") || lowerCategory.includes("threat") || lowerCategory.includes("challenge")) {
+        category = "risk";
+      } else if (lowerCategory.includes("growth") || lowerCategory.includes("expansion") || lowerCategory.includes("opportunity")) {
+        category = "growth";
+      }
+    }
+    
+    // Determine the content
+    const content = item.content || item.text || item.description || item.headline || item.message || "No content available";
+    
+    // Generate a timestamp if none is provided
+    const timestamp = item.timestamp || item.date || item.time || item.published || generateRandomTimestamp();
     
     return {
       id: `${category}-${Date.now()}-${index}`,
-      content: item.content || item.text || item.description || "No content available",
-      category: category,
-      timestamp: item.timestamp || item.date || item.time || generateRandomTimestamp()
+      content,
+      category,
+      timestamp: typeof timestamp === "string" ? timestamp : generateRandomTimestamp()
     };
   });
 };
@@ -112,7 +139,7 @@ const createFallbackStockData = (query: string): StockData => {
   const symbol = query.toUpperCase();
   return {
     symbol,
-    name: `${symbol} Corporation`,
+    name: symbol,
     insights: {
       financials: [
         { metric: "Revenue", value: "Data unavailable", change: "N/A", trend: "neutral" },
@@ -131,7 +158,7 @@ const createFallbackStockData = (query: string): StockData => {
     tweets: [
       {
         id: `fallback-${Date.now()}-1`,
-        content: `Unable to retrieve latest news for ${symbol}. Please check back later.`,
+        content: `Unable to retrieve latest news for ${symbol}. Please check back later or try another search.`,
         category: "financial",
         timestamp: "now"
       }

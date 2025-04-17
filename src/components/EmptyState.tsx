@@ -10,16 +10,20 @@ export const EmptyState = () => {
       </div>
       <h3 className="text-2xl font-mono mb-2 text-center">Welcome to Stoxity Terminal</h3>
       <p className="text-muted-foreground text-center max-w-md mb-6">
-        Enter a stock symbol or company name to get AI-powered insights from SEC filings and earnings reports
+        Enter any stock symbol or company name to get AI-powered insights from SEC filings, earnings reports, and recent news
       </p>
-      <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-lg">
         <div className="border border-dashed border-muted rounded-md p-3 text-center">
           <p className="font-mono text-lg">AAPL</p>
           <p className="text-xs text-muted-foreground">Stock Symbol</p>
         </div>
         <div className="border border-dashed border-muted rounded-md p-3 text-center">
-          <p className="font-mono text-lg">Apple Inc.</p>
+          <p className="font-mono text-lg">Microsoft</p>
           <p className="text-xs text-muted-foreground">Company Name</p>
+        </div>
+        <div className="border border-dashed border-muted rounded-md p-3 text-center">
+          <p className="font-mono text-lg">SpaceX</p>
+          <p className="text-xs text-muted-foreground">Any Company</p>
         </div>
       </div>
     </div>
