@@ -1,21 +1,20 @@
 
 import React from "react";
-import { PieChart } from "lucide-react";
+import { Terminal } from "lucide-react";
 
-interface StoxityHeaderProps {
-  children?: React.ReactNode;
-}
-
-export const StoxityHeader: React.FC<StoxityHeaderProps> = ({ children }) => {
+export const StoxityHeader = () => {
   return (
-    <header className="bg-retro-blue py-4 border-b-4 border-primary">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <PieChart className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold font-mono tracking-tight">STOXITY</h1>
-          </div>
-          {children}
+    <header className="w-full py-6 border-b border-retro-gray/70">
+      <div className="container flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Terminal className="h-8 w-8 text-primary" />
+          <h1 className="text-4xl font-bold font-retro tracking-wide bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            STOXITY
+          </h1>
+        </div>
+        <div className="flex gap-2 items-center">
+          <span className="font-mono text-xs px-2 py-1 bg-retro-gray rounded-md">BETA v0.1</span>
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
         </div>
       </div>
     </header>
