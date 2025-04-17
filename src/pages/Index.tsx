@@ -1,60 +1,80 @@
-import { useState } from "react";
+
+import React, { useState } from "react";
+import { StoxityHeader } from "@/components/StoxityHeader";
+import { StockSearchForm } from "@/components/StockSearchForm";
+import { StockInsightTabs } from "@/components/StockInsightTabs";
+import { EmptyState } from "@/components/EmptyState";
+import { mockApiCall } from "@/services/mockData";
 import { StockData } from "@/types";
-import { getStockData, getStockSuggestions } from "@/services/stockService";
-import { StockCard } from "@/components/StockCard";
-import { SearchBar } from "@/components/SearchBar";
+import { useToast } from "@/hooks/use-toast";
 
-export default function Index() {
-  const [query, setQuery] = useState("");
-  const [data, setData] = useState<StockData | null>(null);
-  const [loading, setLoading] = useState(false);
+const Index = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const handleSearch = async (searchQuery: string) => {
-    setQuery(searchQuery);
-    setLoading(true);
+  const handleSearch = async (query: string) => {
+    setIsLoading(true);
     setError(null);
     
     try {
-      const stockData = await getStockData(searchQuery);
-      setData(stockData);
+      // In a real app, this would make an API call to your backend
+      // which would use your securely stored API key
+      const data = await mockApiCall(query);
+      setStockData(data);
     } catch (err) {
       setError("Failed to fetch stock data. Please try again.");
-      console.error(err);
+      toast({
+        title: "Error",
+        description: "Failed to fetch stock data. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Search error:", err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">Stock Insights</h1>
-        
-        <SearchBar 
-          value={query}
-          onChange={setQuery}
-          onSearch={handleSearch}
-          suggestions={getStockSuggestions(query)}
-        />
-        
-        {loading && (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Fetching stock data...</p>
-          </div>
-        )}
+    <div className="min-h-screen bg-background">
+      <StoxityHeader />
+      
+      <main className="container mx-auto px-4 pb-16">
+        <StockSearchForm onSearch={handleSearch} isLoading={isLoading} />
         
         {error && (
-          <div className="text-center py-8 text-red-600">
+          <div className="my-8 p-4 bg-red-100 border border-red-300 rounded-md text-red-700 font-mono">
             {error}
           </div>
         )}
         
-        {data && !loading && !error && (
-          <StockCard data={data} />
+        {!isLoading && !error && !stockData && <EmptyState />}
+        
+        {isLoading && (
+          <div className="my-8 flex justify-center">
+            <div className="text-center">
+              <div className="inline-block animate-pulse mb-2">
+                <div className="font-mono text-xl">[Analyzing]</div>
+              </div>
+              <p className="text-muted-foreground font-mono text-sm">
+                Retrieving and analyzing SEC filings and earnings reports...
+              </p>
+            </div>
+          </div>
         )}
-      </div>
+        
+        {!isLoading && stockData && (
+          <StockInsightTabs data={stockData} />
+        )}
+        
+        <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t">
+          <p className="mb-1">Stoxity - AI-powered retro stock insights</p>
+          <p>Data provided for demonstration purposes only</p>
+        </footer>
+      </main>
     </div>
   );
-}
+};
+
+export default Index;
