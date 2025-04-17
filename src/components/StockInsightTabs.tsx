@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InsightTable } from "./InsightTable";
 import { InsightTweets } from "./InsightTweets";
-import { FileText, FileText2, AlertCircle } from "lucide-react";
+import { FileText, FileBadge, AlertCircle } from "lucide-react";
 import { StockData } from "@/types";
 
 interface StockInsightTabsProps {
@@ -29,7 +29,7 @@ export const StockInsightTabs: React.FC<StockInsightTabsProps> = ({ data }) => {
             <span>Table View</span>
           </TabsTrigger>
           <TabsTrigger value="tweets" className="flex items-center gap-2 flex-1">
-            <FileText2 className="h-4 w-4" />
+            <FileBadge className="h-4 w-4" />
             <span>News Report</span>
           </TabsTrigger>
         </TabsList>

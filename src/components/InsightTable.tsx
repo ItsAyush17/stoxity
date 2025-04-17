@@ -3,7 +3,7 @@ import React from "react";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { InsightItem } from "./StockInsightTabs";
+import { InsightItem } from "@/types";
 
 interface InsightTableProps {
   insights: {
