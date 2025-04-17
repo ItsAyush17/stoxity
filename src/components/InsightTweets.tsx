@@ -1,14 +1,15 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TweetInsight } from "@/types";
 import { FileText, Calendar, ChartBarIcon, AlertCircle, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface InsightTweetsProps {
   tweets: TweetInsight[];
+  className?: string;
 }
 
-export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets }) => {
+export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets, className }) => {
   // Group tweets by category
   const groupedTweets = {
     financial: tweets.filter(tweet => tweet.category === "financial"),
@@ -43,7 +44,7 @@ export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", className)}>
       {Object.entries(groupedTweets).map(([category, categoryTweets]) => (
         <div key={category} className="space-y-4">
           <h3 className="text-lg font-semibold capitalize flex items-center gap-2">

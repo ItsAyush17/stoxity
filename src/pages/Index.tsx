@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
-import { StockInsightTabs } from "@/components/StockInsightTabs";
+import { InsightTable } from "@/components/InsightTable";
+import { InsightTweets } from "@/components/InsightTweets";
 import { EmptyState } from "@/components/EmptyState";
 import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -13,16 +14,14 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasApiKey, setHasApiKey] = useState(true); // Default to true since we have the API key
+  const [hasApiKey, setHasApiKey] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set the API key programmatically
     const apiKey = "sk-0df192262b5c40b1ac46f00c16d5c417";
     localStorage.setItem('deepSeekApiKey', apiKey);
     setHasApiKey(true);
     
-    // Check URL params for direct stock query
     const params = new URLSearchParams(window.location.search);
     const stockQuery = params.get('q');
     if (stockQuery) {
@@ -35,7 +34,6 @@ const Index = () => {
     setError(null);
     
     try {
-      // Update URL to enable sharing of search results
       const url = new URL(window.location.href);
       url.searchParams.set('q', query);
       window.history.replaceState({}, '', url);
@@ -102,7 +100,17 @@ const Index = () => {
         )}
         
         {!isLoading && stockData && (
-          <StockInsightTabs data={stockData} />
+          <div className="w-full my-8 font-mono">
+            <div className="px-4 py-2 bg-retro-blue/50 border border-retro-blue rounded-md mb-4">
+              <h3 className="font-bold text-lg mb-2">{stockData.name} ({stockData.symbol})</h3>
+              <p className="text-sm text-muted-foreground">
+                Analysis based on latest SEC filings and earnings reports
+              </p>
+            </div>
+            
+            <InsightTable insights={stockData.insights} />
+            <InsightTweets tweets={stockData.tweets} className="mt-6" />
+          </div>
         )}
         
         <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t border-dashed">
@@ -115,3 +123,4 @@ const Index = () => {
 };
 
 export default Index;
+
