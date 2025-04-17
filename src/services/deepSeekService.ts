@@ -1,116 +1,57 @@
 
-import { StockData, StockSuggestion } from "@/types";
+import { StockData } from "@/types";
 import { extractDataFromResponse } from "@/utils/responseParser";
-import { mockApiCall } from "./mockData";
+import OpenAI from "openai";
 
-// API key should ideally be stored in environment variables or user input
-let apiKey = "sk-0df192262b5c40b1ac46f00c16d5c417";
-
-export const setDeepSeekApiKey = (key: string) => {
-  apiKey = key;
-  // Store in localStorage for persistence across refreshes
-  localStorage.setItem('deepSeekApiKey', key);
-};
-
+// Get API key from localStorage
 export const getDeepSeekApiKey = (): string => {
-  // Try to get from memory first, then localStorage
-  if (apiKey) return apiKey;
-  
-  const storedKey = localStorage.getItem('deepSeekApiKey');
-  if (storedKey) {
-    apiKey = storedKey;
-    return storedKey;
-  }
-  
-  return '';
+  return localStorage.getItem('deepSeekApiKey') || '';
 };
 
 export const fetchStockData = async (query: string): Promise<StockData> => {
-  const key = getDeepSeekApiKey();
-  if (!key) {
+  const apiKey = getDeepSeekApiKey();
+  if (!apiKey) {
     throw new Error("DeepSeek API key is required");
   }
   
   try {
-    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${key}`
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          {
-            role: "system", 
-            content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Provide financial metrics, growth indicators, risk factors, and recent news in a structured format."
-          },
-          { 
-            role: "user", 
-            content: `Analyze earnings calls, SEC filings, and recent news for ${query}. Provide a comprehensive analysis including current financial data, growth metrics, and risk assessment. Format the response in JSON with three sections: 'financials', 'growth', and 'risks' (each with metrics, values, changes, and trends), plus a 'news' section with categorized insights.` 
-          }
-        ],
-        temperature: 0.5,
-        max_tokens: 4000
-      })
+    // Initialize the OpenAI client with the DeepSeek API base URL
+    const client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: "https://api.deepseek.com/v1"
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("API Error:", errorData);
-      throw new Error(`API request failed with status ${response.status}`);
-    }
+    // Create the completion request with the format specified
+    const response = await client.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "system", 
+          content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Format your response EXACTLY as follows:\n\n### **📊 {COMPANY} Stock Snapshot (Recent Data)**\n| **Metric** | **Value** | **Trend** |\n|------------|-----------|----------|\n| **Q4 Revenue** | $X.XB (X% YoY) | ⏸️ Neutral/🔺 Positive/🔻 Negative |\n... (5-6 key metrics)\n\n---\n\n### **🔍 Key Insights (Tweet-Style)**\n1️⃣ **Short Title**: Detailed insight with **bold numbers**. #Hashtag\n2️⃣ **Short Title**: Detailed insight with **bold numbers**. #Hashtag\n... (4-5 key insights)\n\n---\n\n### **📰 Recent News Highlights**\n- **Date**: Key news point with **impact**. #Hashtag\n- **Date**: Key news point with **impact**. #Hashtag\n... (2-3 news items)\n\n---\n\n### **🎯 Verdict**: **Recommendation**\n- **Strengths**: List 2-3 key strengths.\n- **Risks**: List 2-3 key risks.\n- **Outlook**: Short future prediction.\n\n**#{TICKER} #Investing**"
+        },
+        { 
+          role: "user", 
+          content: `Use earnings calls, SEC filings and recent news to analyze the ${query} stock and produce an overall insight. Follow the exact format in my system message.` 
+        }
+      ],
+      temperature: 0.5,
+      max_tokens: 4000
+    });
 
-    const data = await response.json();
-    console.log("DeepSeek API Response:", data);
+    // Extract the content from the response
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("Empty response from API");
+    }
+    
+    console.log("Raw DeepSeek Response:", content);
     
     // Parse the response and convert it to our StockData format
-    return extractDataFromResponse(data, query);
+    return extractDataFromResponse({ choices: [{ message: { content } }] }, query);
   } catch (error) {
     console.error("Error fetching stock data:", error);
-    
-    // If we're in development mode or DeepSeek API fails, fall back to mock data
-    if (import.meta.env.DEV || error instanceof Error && error.message.includes("API request failed")) {
-      console.log("Falling back to mock data");
-      return mockApiCall(query);
-    }
-    
     throw error;
   }
-};
-
-// For search suggestions - expanded list of popular stocks
-const popularStocks: StockSuggestion[] = [
-  { symbol: "AAPL", name: "Apple Inc." },
-  { symbol: "MSFT", name: "Microsoft Corporation" },
-  { symbol: "AMZN", name: "Amazon.com Inc." },
-  { symbol: "GOOGL", name: "Alphabet Inc." },
-  { symbol: "META", name: "Meta Platforms Inc." },
-  { symbol: "TSLA", name: "Tesla Inc." },
-  { symbol: "NVDA", name: "NVIDIA Corporation" },
-  { symbol: "JNJ", name: "Johnson & Johnson" },
-  { symbol: "V", name: "Visa Inc." },
-  { symbol: "WMT", name: "Walmart Inc." },
-  { symbol: "JPM", name: "JPMorgan Chase & Co." },
-  { symbol: "PG", name: "Procter & Gamble Co." },
-  { symbol: "PYPL", name: "PayPal Holdings Inc." },
-  { symbol: "DIS", name: "The Walt Disney Company" },
-  { symbol: "NFLX", name: "Netflix Inc." },
-  { symbol: "INTC", name: "Intel Corporation" },
-  { symbol: "HD", name: "Home Depot Inc." },
-  { symbol: "VZ", name: "Verizon Communications" },
-  { symbol: "KO", name: "Coca-Cola Company" },
-  { symbol: "MCD", name: "McDonald's Corporation" }
-];
-
-export const searchStocks = (query: string): StockSuggestion[] => {
-  if (!query) return [];
-  
-  const lowerCaseQuery = query.toLowerCase();
-  return popularStocks.filter(stock => 
-    stock.symbol.toLowerCase().includes(lowerCaseQuery) || 
-    stock.name.toLowerCase().includes(lowerCaseQuery)
-  ).slice(0, 5); // Return top 5 matches
 };
 
 // Modified to always return true - allow any company or ticker input

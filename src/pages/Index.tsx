@@ -2,27 +2,26 @@
 import React, { useState, useEffect } from "react";
 import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
-import { StockInsightTabs } from "@/components/StockInsightTabs";
+import { InsightTable } from "@/components/InsightTable";
+import { InsightTweets } from "@/components/InsightTweets";
 import { EmptyState } from "@/components/EmptyState";
 import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { fetchStockData, getDeepSeekApiKey, setDeepSeekApiKey } from "@/services/deepSeekService";
+import { fetchStockData } from "@/services/deepSeekService";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasApiKey, setHasApiKey] = useState(true); // Default to true since we have the API key
+  const [hasApiKey, setHasApiKey] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set the API key programmatically
     const apiKey = "sk-0df192262b5c40b1ac46f00c16d5c417";
-    setDeepSeekApiKey(apiKey);
+    localStorage.setItem('deepSeekApiKey', apiKey);
     setHasApiKey(true);
     
-    // Check URL params for direct stock query
     const params = new URLSearchParams(window.location.search);
     const stockQuery = params.get('q');
     if (stockQuery) {
@@ -35,7 +34,6 @@ const Index = () => {
     setError(null);
     
     try {
-      // Update URL to enable sharing of search results
       const url = new URL(window.location.href);
       url.searchParams.set('q', query);
       window.history.replaceState({}, '', url);
@@ -57,7 +55,7 @@ const Index = () => {
   };
 
   const handleApiKeySubmit = (apiKey: string) => {
-    setDeepSeekApiKey(apiKey);
+    localStorage.setItem('deepSeekApiKey', apiKey);
     setHasApiKey(true);
     toast({
       title: "Success",
@@ -66,12 +64,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-mono">
       <StoxityHeader />
       
       <main className="container mx-auto px-4 pb-16">
         {!hasApiKey && (
-          <div className="max-w-3xl mx-auto my-8 p-4 bg-yellow-100 border border-yellow-300 rounded-md">
+          <div className="max-w-3xl mx-auto my-8 p-4 bg-yellow-100 border-2 border-dashed border-yellow-300 rounded-md">
             <h3 className="font-bold mb-2">DeepSeek API Key Required</h3>
             <p className="mb-4">To analyze stocks with real data, please provide your DeepSeek API key.</p>
             <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
@@ -81,7 +79,7 @@ const Index = () => {
         <StockSearchForm onSearch={handleSearch} isLoading={isLoading} />
         
         {error && (
-          <div className="my-8 p-4 bg-red-100 border border-red-300 rounded-md text-red-700 font-mono">
+          <div className="my-8 p-4 bg-red-100 border-2 border-dashed border-red-300 rounded-md text-red-700 font-mono">
             {error}
           </div>
         )}
@@ -90,7 +88,7 @@ const Index = () => {
         
         {isLoading && (
           <div className="my-8 flex justify-center">
-            <div className="text-center">
+            <div className="text-center p-6 bg-retro-gray/30 border-2 border-dashed rounded-md w-full max-w-lg">
               <div className="inline-block animate-pulse mb-2">
                 <div className="font-mono text-xl">[Analyzing]</div>
               </div>
@@ -102,12 +100,22 @@ const Index = () => {
         )}
         
         {!isLoading && stockData && (
-          <StockInsightTabs data={stockData} />
+          <div className="w-full my-8 font-mono">
+            <div className="px-4 py-2 bg-retro-blue/50 border border-retro-blue rounded-md mb-4">
+              <h3 className="font-bold text-lg mb-2">{stockData.name} ({stockData.symbol})</h3>
+              <p className="text-sm text-muted-foreground">
+                Analysis based on latest SEC filings and earnings reports
+              </p>
+            </div>
+            
+            <InsightTable insights={stockData.insights} />
+            <InsightTweets tweets={stockData.tweets} className="mt-6" />
+          </div>
         )}
         
-        <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t">
-          <p className="mb-1">Stoxity - AI-powered stock insights from SEC filings & earnings calls</p>
-          <p>Powered by DeepSeek AI</p>
+        <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t border-dashed">
+          <p className="mb-1 font-mono">Stoxity - AI-powered stock insights from SEC filings & earnings calls</p>
+          <p className="font-mono">Powered by DeepSeek AI</p>
         </footer>
       </main>
     </div>
@@ -115,3 +123,4 @@ const Index = () => {
 };
 
 export default Index;
+
