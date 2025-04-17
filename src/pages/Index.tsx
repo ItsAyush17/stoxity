@@ -4,7 +4,8 @@ import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
 import { StockInsightTabs } from "@/components/StockInsightTabs";
 import { EmptyState } from "@/components/EmptyState";
-import { mockApiCall } from "@/services/mockData";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { getStockAnalysisFromGemini } from "@/services/geminiService";
 import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,16 +13,34 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const handleApiKeySubmit = (key: string) => {
+    setApiKey(key);
+    localStorage.setItem("gemini_api_key", key); // Store API key in localStorage (temporary solution)
+    toast({
+      title: "API Key Saved",
+      description: "Your API key has been saved for this session.",
+    });
+  };
+
   const handleSearch = async (query: string) => {
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please provide your Gemini API key first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app, this would make an API call to your backend
-      // which would use your securely stored API key
-      const data = await mockApiCall(query);
+      // Call Gemini API service
+      const data = await getStockAnalysisFromGemini(query, apiKey);
       setStockData(data);
     } catch (err) {
       setError("Failed to fetch stock data. Please try again.");
@@ -36,9 +55,21 @@ const Index = () => {
     }
   };
 
+  // Check for previously saved API key on component mount
+  React.useEffect(() => {
+    const savedKey = localStorage.getItem("gemini_api_key");
+    if (savedKey) {
+      setApiKey(savedKey);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
-      <StoxityHeader />
+      <StoxityHeader>
+        <div className="ml-auto">
+          <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
+        </div>
+      </StoxityHeader>
       
       <main className="container mx-auto px-4 pb-16">
         <StockSearchForm onSearch={handleSearch} isLoading={isLoading} />
