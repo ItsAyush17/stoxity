@@ -1,7 +1,7 @@
 
 import { StockData } from "@/types";
 import { extractDataFromResponse } from "@/utils/responseParser";
-import OpenAI from "openai";
+import { mockApiCall } from "./mockData";
 
 // Get API key from localStorage
 export const getDeepSeekApiKey = (): string => {
@@ -15,41 +15,49 @@ export const fetchStockData = async (query: string): Promise<StockData> => {
   }
   
   try {
-    // Initialize the OpenAI client with the DeepSeek API base URL
-    const client = new OpenAI({
-      apiKey: apiKey,
-      baseURL: "https://api.deepseek.com/v1"
+    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          {
+            role: "system", 
+            content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Provide financial metrics, growth indicators, risk factors, and recent news in a structured format."
+          },
+          { 
+            role: "user", 
+            content: `Use earning calls, SEC filing and news in recent to analyse the ${query} stock and produce a overall insight. Data in table format and numbers in tweet like news format.` 
+          }
+        ],
+        temperature: 0.5,
+        max_tokens: 4000
+      })
     });
 
-    // Create the completion request with the format specified
-    const response = await client.chat.completions.create({
-      model: "deepseek-chat",
-      messages: [
-        {
-          role: "system", 
-          content: "You are a financial analyst assistant. Analyze earnings calls, SEC filings, and recent news for the specified company or ticker symbol. Format your response EXACTLY as follows:\n\n### **📊 {COMPANY} Stock Snapshot (Recent Data)**\n| **Metric** | **Value** | **Trend** |\n|------------|-----------|----------|\n| **Q4 Revenue** | $X.XB (X% YoY) | ⏸️ Neutral/🔺 Positive/🔻 Negative |\n... (5-6 key metrics)\n\n---\n\n### **🔍 Key Insights (Tweet-Style)**\n1️⃣ **Short Title**: Detailed insight with **bold numbers**. #Hashtag\n2️⃣ **Short Title**: Detailed insight with **bold numbers**. #Hashtag\n... (4-5 key insights)\n\n---\n\n### **📰 Recent News Highlights**\n- **Date**: Key news point with **impact**. #Hashtag\n- **Date**: Key news point with **impact**. #Hashtag\n... (2-3 news items)\n\n---\n\n### **🎯 Verdict**: **Recommendation**\n- **Strengths**: List 2-3 key strengths.\n- **Risks**: List 2-3 key risks.\n- **Outlook**: Short future prediction.\n\n**#{TICKER} #Investing**"
-        },
-        { 
-          role: "user", 
-          content: `Use earnings calls, SEC filings and recent news to analyze the ${query} stock and produce an overall insight. Follow the exact format in my system message.` 
-        }
-      ],
-      temperature: 0.5,
-      max_tokens: 4000
-    });
-
-    // Extract the content from the response
-    const content = response.choices[0].message.content;
-    if (!content) {
-      throw new Error("Empty response from API");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("API Error:", errorData);
+      throw new Error(`API request failed with status ${response.status}`);
     }
-    
-    console.log("Raw DeepSeek Response:", content);
+
+    const data = await response.json();
+    console.log("DeepSeek API Response:", data);
     
     // Parse the response and convert it to our StockData format
-    return extractDataFromResponse({ choices: [{ message: { content } }] }, query);
+    return extractDataFromResponse(data, query);
   } catch (error) {
     console.error("Error fetching stock data:", error);
+    
+    // If we're in development mode or DeepSeek API fails, fall back to mock data
+    if (import.meta.env.DEV || error instanceof Error && error.message.includes("API request failed")) {
+      console.log("Falling back to mock data");
+      return mockApiCall(query);
+    }
+    
     throw error;
   }
 };
