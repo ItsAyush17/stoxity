@@ -4,35 +4,23 @@ import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
 import { StockInsightTabs } from "@/components/StockInsightTabs";
 import { EmptyState } from "@/components/EmptyState";
-import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { mockApiCall } from "@/services/mockData";
 import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSearch = async (query: string) => {
-    if (!apiKey) {
-      setError("API key is required. Please add your API key.");
-      toast({
-        title: "API Key Required",
-        description: "Please add your API key to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app, we'd use the apiKey for authentication
-      // For now, we'll just use the mock data
+      // In a real app, this would make an API call to your backend
+      // which would use your securely stored API key
       const data = await mockApiCall(query);
       setStockData(data);
     } catch (err) {
@@ -48,24 +36,11 @@ const Index = () => {
     }
   };
 
-  const handleApiKeySubmit = (key: string) => {
-    setApiKey(key);
-    setError(null);
-    toast({
-      title: "API Key Saved",
-      description: "Your API key has been saved successfully.",
-    });
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <StoxityHeader />
       
       <main className="container mx-auto px-4 pb-16">
-        <div className="flex justify-end mt-4">
-          <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
-        </div>
-        
         <StockSearchForm onSearch={handleSearch} isLoading={isLoading} />
         
         {error && (

@@ -1,8 +1,8 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { TweetInsight } from "./StockInsightTabs";
-import { MessageSquare, Calendar, ChartBarIcon, AlertCircle, TrendingUp } from "lucide-react";
+import { TweetInsight } from "@/types";
+import { FileText, Calendar, ChartBarIcon, AlertCircle, TrendingUp } from "lucide-react";
 
 interface InsightTweetsProps {
   tweets: TweetInsight[];
@@ -25,7 +25,7 @@ export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets }) => {
       case "risk":
         return <AlertCircle className="h-5 w-5 text-amber-500" />;
       default:
-        return <MessageSquare className="h-5 w-5" />;
+        return <FileText className="h-5 w-5" />;
     }
   };
 
@@ -59,7 +59,7 @@ export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets }) => {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground font-mono">@StoxityAI</span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">

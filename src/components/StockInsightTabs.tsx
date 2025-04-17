@@ -3,32 +3,8 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InsightTable } from "./InsightTable";
 import { InsightTweets } from "./InsightTweets";
-import { FileText, MessageSquare, AlertCircle } from "lucide-react";
-
-export interface StockData {
-  symbol: string;
-  name: string;
-  insights: {
-    financials: InsightItem[];
-    growth: InsightItem[];
-    risks: InsightItem[];
-  };
-  tweets: TweetInsight[];
-}
-
-export interface InsightItem {
-  metric: string;
-  value: string;
-  change?: string;
-  trend?: "up" | "down" | "neutral";
-}
-
-export interface TweetInsight {
-  id: string;
-  content: string;
-  category: "financial" | "growth" | "risk";
-  timestamp: string;
-}
+import { FileText, FileText2, AlertCircle } from "lucide-react";
+import { StockData } from "@/types";
 
 interface StockInsightTabsProps {
   data: StockData | null;
@@ -53,8 +29,8 @@ export const StockInsightTabs: React.FC<StockInsightTabsProps> = ({ data }) => {
             <span>Table View</span>
           </TabsTrigger>
           <TabsTrigger value="tweets" className="flex items-center gap-2 flex-1">
-            <MessageSquare className="h-4 w-4" />
-            <span>Tweet Format</span>
+            <FileText2 className="h-4 w-4" />
+            <span>News Report</span>
           </TabsTrigger>
         </TabsList>
         
