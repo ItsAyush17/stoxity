@@ -1,5 +1,5 @@
-
 import { StockData, InsightItem, TweetInsight } from "@/types";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface GeminiAnalysisRequest {
   stockSymbol: string;
@@ -10,44 +10,48 @@ interface GeminiResponse {
   data: StockData;
 }
 
+// Initialize the Gemini API
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+
 // This function will be used to call the Gemini API
 export const getStockAnalysisFromGemini = async (
   symbol: string,
   apiKey: string
 ): Promise<StockData> => {
   try {
-    console.log(`Requesting analysis for ${symbol} using Gemini API`);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
-    // In a real implementation, you would make an actual API call to Google's Gemini API
-    // This is a placeholder where you'll add your API call implementation
+    const prompt = `Analyze the stock ${symbol} and provide a structured response with:
+    1. Company name
+    2. Financial metrics (revenue, profit, etc.)
+    3. Growth indicators
+    4. Risk factors
+    5. Recent news/tweets
     
-    // Example API call structure (to be replaced with actual Gemini implementation):
-    /*
-    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
+    Format the response as a JSON object matching this structure:
+    {
+      "symbol": string,
+      "name": string,
+      "insights": {
+        "financials": [{ "metric": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }],
+        "growth": [{ "metric": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }],
+        "risks": [{ "metric": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }]
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Provide detailed financial analysis for ${symbol} stock including financial metrics, 
-                   growth indicators, risk factors, and news insights. Format the response as JSON.`
-          }]
-        }]
-      })
-    });
+      "tweets": [{ "id": string, "content": string, "category": "financial"|"growth"|"risk", "timestamp": string }]
+    }`;
 
-    const result = await response.json();
-    // You'll need to parse the Gemini response and transform it to match your StockData type
-    */
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
     
-    // For now, returning mock data to maintain functionality
-    // Replace this with actual API processing logic when implementing
-    console.log("Using mock data as placeholder - replace with actual Gemini API implementation");
-    const mockData = await generateMockDataFromSymbol(symbol);
-    return mockData;
+    try {
+      // Parse the JSON response
+      const parsedData = JSON.parse(text);
+      return parsedData as StockData;
+    } catch (parseError) {
+      console.error("Error parsing Gemini response:", parseError);
+      throw new Error("Failed to parse stock analysis data");
+    }
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw new Error("Failed to analyze stock data using Gemini API");
@@ -143,4 +147,27 @@ const generateMockDataFromSymbol = async (symbol: string): Promise<StockData> =>
       }
     ]
   };
+};
+
+export const getGeminiResponse = async (prompt: string) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Error getting Gemini response:', error);
+    throw error;
+  }
+};
+
+export const getGeminiStreamResponse = async (prompt: string) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContentStream(prompt);
+    return result.stream;
+  } catch (error) {
+    console.error('Error getting Gemini stream response:', error);
+    throw error;
+  }
 };
