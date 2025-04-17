@@ -1,12 +1,87 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from "react";
+import { StoxityHeader } from "@/components/StoxityHeader";
+import { StockSearchForm } from "@/components/StockSearchForm";
+import { StockInsightTabs } from "@/components/StockInsightTabs";
+import { EmptyState } from "@/components/EmptyState";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { mockApiCall } from "@/services/mockData";
+import { StockData } from "@/types";
 
 const Index = () => {
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [stockData, setStockData] = useState<StockData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSearch = async (query: string) => {
+    if (!apiKey) {
+      setError("API key is required. Please add your API key.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // In a real app, we'd use the apiKey for authentication
+      // For now, we'll just use the mock data
+      const data = await mockApiCall(query);
+      setStockData(data);
+    } catch (err) {
+      setError("Failed to fetch stock data. Please try again.");
+      console.error("Search error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApiKeySubmit = (key: string) => {
+    setApiKey(key);
+    setError(null);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <StoxityHeader />
+      
+      <main className="container mx-auto px-4 pb-16">
+        <div className="flex justify-end mt-4">
+          <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
+        </div>
+        
+        <StockSearchForm onSearch={handleSearch} isLoading={isLoading} />
+        
+        {error && (
+          <div className="my-8 p-4 bg-red-100 border border-red-300 rounded-md text-red-700 font-mono">
+            {error}
+          </div>
+        )}
+        
+        {!isLoading && !error && !stockData && <EmptyState />}
+        
+        {isLoading && (
+          <div className="my-8 flex justify-center">
+            <div className="text-center">
+              <div className="inline-block animate-pulse mb-2">
+                <div className="font-mono text-xl">[Analyzing]</div>
+              </div>
+              <p className="text-muted-foreground font-mono text-sm">
+                Retrieving and analyzing SEC filings and earnings reports...
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {!isLoading && stockData && (
+          <StockInsightTabs data={stockData} />
+        )}
+        
+        <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t">
+          <p className="mb-1">Stoxity - AI-powered retro stock insights</p>
+          <p>Data provided for demonstration purposes only</p>
+        </footer>
+      </main>
     </div>
   );
 };
