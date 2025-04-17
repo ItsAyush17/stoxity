@@ -18,7 +18,19 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				mono: ['"IBM Plex Mono"', 'monospace'],
+				retro: ['"VT323"', 'monospace'],
+				sans: ['"Inter"', 'sans-serif'],
+			},
 			colors: {
+				retro: {
+					beige: '#FDE1D3',
+					yellow: '#FEF7CD',
+					blue: '#D3E4FD',
+					pink: '#FFDEE2',
+					gray: '#F1F0FB',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
