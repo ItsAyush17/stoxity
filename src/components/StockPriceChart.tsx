@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { StockData } from '@/types';
 import { ChartContainer } from '@/components/ui/chart';
@@ -25,50 +26,57 @@ export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data, classNam
   const chartData = transformInsightsToChartData(data || []);
   
   if (!chartData.length) {
-    return null; // Don't render the chart if no data
+    return null;
   }
 
   return (
-    <div className={`w-full h-[300px] bg-white rounded-lg border-2 border-primary/20 p-4 mt-4 ${className || ''}`}>
-      <h3 className="font-bold mb-4">Financial Metrics Chart</h3>
+    <div className={`w-full h-[400px] bg-white rounded-lg border-2 border-primary/20 p-6 animate-fade-in ${className || ''}`}>
+      <h3 className="font-bold mb-6 text-lg">Financial Metrics Chart</h3>
       <ChartContainer config={{
         line: {
           color: '#8B5CF6'
         }
       }}>
-        <AreaChart data={chartData}>
-          <defs>
-            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis 
-            dataKey="name"
-            tick={{ fill: '#666', fontSize: 12 }}
-            interval={0}
-            angle={-45}
-            textAnchor="end"
-            height={80}
-          />
-          <YAxis tick={{ fill: '#666', fontSize: 12 }} />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#fff',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              fontSize: '12px'
-            }}
-          />
-          <Area 
-            type="monotone" 
-            dataKey="value" 
-            stroke="#8B5CF6" 
-            fillOpacity={1} 
-            fill="url(#colorValue)"
-          />
-        </AreaChart>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
+            <defs>
+              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis 
+              dataKey="name"
+              tick={{ fill: '#666', fontSize: 12 }}
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis 
+              tick={{ fill: '#666', fontSize: 12 }}
+              width={80}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#fff',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '12px',
+                padding: '8px'
+              }}
+            />
+            <Area 
+              type="monotone" 
+              dataKey="value" 
+              stroke="#8B5CF6" 
+              fillOpacity={1} 
+              fill="url(#colorValue)"
+              className="animate-fade-in"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </ChartContainer>
     </div>
   );

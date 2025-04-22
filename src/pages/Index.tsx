@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
@@ -65,12 +64,12 @@ const Index = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-primary duration-1000" />
               </div>
               <div className="font-mono text-xl mb-2">
-                <TypewriterText text="[Analyzing Stock Data]" speed={150} />
+                <TypewriterText text="[Analyzing Stock Data]" speed={200} />
               </div>
               <p className="text-muted-foreground font-mono text-sm">
                 <TypewriterText 
                   text="Retrieving and analyzing SEC filings, earnings calls, and news..." 
-                  speed={100}
+                  speed={150}
                 />
               </p>
             </div>
@@ -78,11 +77,19 @@ const Index = () => {
         )}
         
         {!isLoading && stockData && (
-          <div className="w-full my-8 font-mono animate-fade-in duration-500">
-            <div className="px-4 py-2 bg-retro-blue/50 border border-retro-blue rounded-md mb-4">
-              <h3 className="font-bold text-lg mb-2">{stockData.name} ({stockData.symbol})</h3>
+          <div className="w-full my-8 font-mono space-y-6">
+            <div className="px-4 py-2 bg-retro-blue/50 border border-retro-blue rounded-md animate-fade-in duration-300">
+              <h3 className="font-bold text-lg mb-2">
+                <TypewriterText 
+                  text={`${stockData.name} (${stockData.symbol})`}
+                  speed={100}
+                />
+              </h3>
               <p className="text-sm text-muted-foreground">
-                Analysis based on latest SEC filings and earnings reports
+                <TypewriterText 
+                  text="Analysis based on latest SEC filings and earnings reports"
+                  speed={100}
+                />
               </p>
             </div>
             
@@ -90,8 +97,13 @@ const Index = () => {
               <StockPriceChart data={stockData.priceHistory} className="mb-6" />
             )}
             
-            <InsightTable insights={stockData.insights} />
-            <InsightTweets tweets={stockData.tweets} className="mt-6" />
+            <div className="animate-fade-in">
+              <InsightTable insights={stockData.insights} />
+            </div>
+            
+            <div className="animate-fade-in delay-200">
+              <InsightTweets tweets={stockData.tweets} className="mt-6" />
+            </div>
           </div>
         )}
         
