@@ -29,7 +29,7 @@ export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data, classNam
   }
 
   return (
-    <div className={`w-full h-[260px] bg-white rounded-lg border-2 border-primary/20 p-6 mb-8 animate-fade-in ${className || ''}`}>
+    <div className={`w-full h-[50px] bg-white rounded-lg border-2 border-primary/20 p-6 mb-8 animate-fade-in ${className || ''}`}>
       <h3 className="font-bold mb-6 text-lg">Financial Metrics Chart</h3>
       <div className="h-[460px]">
         <ChartContainer config={{
