@@ -6,7 +6,7 @@ interface TypewriterTextProps {
   speed?: number;
 }
 
-export const TypewriterText: React.FC<TypewriterTextProps> = ({ text, speed = 50 }) => {
+export const TypewriterText: React.FC<TypewriterTextProps> = ({ text, speed = 100 }) => {
   const [displayText, setDisplayText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -25,7 +25,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({ text, speed = 50
     <span className="font-mono">
       {displayText}
       {currentIndex < text.length && (
-        <span className="animate-pulse">▋</span>
+        <span className="animate-pulse duration-1000">▋</span>
       )}
     </span>
   );
