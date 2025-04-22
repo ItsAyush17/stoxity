@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StockData } from '@/types';
 import { ChartContainer } from '@/components/ui/chart';
@@ -30,54 +29,54 @@ export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data, classNam
   }
 
   return (
-    <div className={`w-full h-[400px] bg-white rounded-lg border-2 border-primary/20 p-6 animate-fade-in ${className || ''}`}>
+    <div className={`w-full h-[260px] bg-white rounded-lg border-2 border-primary/20 p-6 mb-8 animate-fade-in ${className || ''}`}>
       <h3 className="font-bold mb-6 text-lg">Financial Metrics Chart</h3>
-      <ChartContainer config={{
-        line: {
-          color: '#8B5CF6'
-        }
-      }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
-              dataKey="name"
-              tick={{ fill: '#666', fontSize: 12 }}
-              interval={0}
-              angle={-45}
-              textAnchor="end"
-              height={60}
-            />
-            <YAxis 
-              tick={{ fill: '#666', fontSize: 12 }}
-              width={80}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#fff',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '12px',
-                padding: '8px'
-              }}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#8B5CF6" 
-              fillOpacity={1} 
-              fill="url(#colorValue)"
-              className="animate-fade-in"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </ChartContainer>
+      <div className="h-[460px]">
+        <ChartContainer config={{
+          line: {
+            color: '#8B5CF6'
+          }
+        }}>
+          <ResponsiveContainer width="40%" height="20%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 60 }}>
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.2}/>
+                  <stop offset="20%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                  <stop offset="50%" stopColor="#8B5CF6" stopOpacity={0.2}/>
+                  <stop offset="80%" stopColor="#8B5CF6" stopOpacity={0.1}/>
+                  <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis 
+                dataKey="name"
+                hide={true}
+              />
+              <YAxis 
+                hide={true}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff',
+                  border: '0px solid #ccc',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  padding: '8px'
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="value" 
+                stroke="#8B5CF6" 
+                fillOpacity={1} 
+                fill="url(#colorValue)"
+                className="animate-fade-in"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
     </div>
   );
 };

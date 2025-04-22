@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -19,13 +18,16 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!query.trim()) return;
-    
-    // Any non-empty query is accepted
+    if (!query.trim()) {
+      toast({
+        title: "Please enter a stock symbol",
+        variant: "destructive",
+      });
+      return;
+    }
     onSearch(query);
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && query.trim()) {
       handleSubmit(e as unknown as React.FormEvent);
