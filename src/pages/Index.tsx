@@ -7,7 +7,7 @@ import { InsightTweets } from "@/components/InsightTweets";
 import { EmptyState } from "@/components/EmptyState";
 import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { fetchStockData } from "@/services/deepSeekService";
+import { fetchStockData } from "@/services/stockService";
 import { Loader2 } from "lucide-react";
 
 const Index = () => {
