@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { StoxityHeader } from "@/components/StoxityHeader";
 import { StockSearchForm } from "@/components/StockSearchForm";
@@ -9,6 +8,8 @@ import { StockData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { fetchStockData } from "@/services/stockService";
 import { Loader2 } from "lucide-react";
+import { TypewriterText } from "@/components/TypewriterText";
+import { StockPriceChart } from "@/components/StockPriceChart";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -62,9 +63,14 @@ const Index = () => {
               <div className="inline-block mb-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-              <div className="font-mono text-xl mb-2 animate-pulse">[Analyzing]</div>
+              <div className="font-mono text-xl mb-2">
+                <TypewriterText text="[Analyzing Stock Data]" />
+              </div>
               <p className="text-muted-foreground font-mono text-sm">
-                Retrieving and analyzing SEC filings, earnings calls, and news...
+                <TypewriterText 
+                  text="Retrieving and analyzing SEC filings, earnings calls, and news..." 
+                  speed={30}
+                />
               </p>
             </div>
           </div>
