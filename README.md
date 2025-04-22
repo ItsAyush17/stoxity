@@ -21,19 +21,7 @@ Responsive Design: Ensures optimal rendering across all device breakpoints using
 
 Visual Flourishes: Incorporates retro-inspired UI elements like CRT scanline effects, pixelated icons, and animated gradients.
 
-How Can I Edit This Code?
-There are multiple workflows for contributing to Stoxity's codebase, each tailored to different development preferences.
-1. Use Lovable (Web-Based Editing)
-Navigate to the Lovable Project Dashboard.
 
-Leverage Lovable's prompt-driven interface to modify components, styles, or logic.
-
-Changes are automatically committed to the GitHub repository, ensuring version control consistency.
-
-2. Use Your Preferred IDE (Local Development)
-To work locally, clone the repository and set up the development environment. The only prerequisite is Node.js and npm, ideally managed via nvm for version stability.
-Follow these steps:
-bash
 
 # Step 1: Clone the repository.
 git clone https://github.com/itsayush17/stoxity.git
