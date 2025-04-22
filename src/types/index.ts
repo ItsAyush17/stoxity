@@ -1,4 +1,3 @@
-
 export interface StockData {
   symbol: string;
   name: string;
@@ -8,6 +7,7 @@ export interface StockData {
     risks: InsightItem[];
   };
   tweets: TweetInsight[];
+  priceHistory?: any[]; // Add this field to support the chart data
 }
 
 export interface InsightItem {

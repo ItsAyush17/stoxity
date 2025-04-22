@@ -86,7 +86,10 @@ const Index = () => {
               </p>
             </div>
             
-            <StockPriceChart data={stockData.priceHistory} className="mb-6" />
+            {stockData.priceHistory && stockData.priceHistory.length > 0 && (
+              <StockPriceChart data={stockData.priceHistory} className="mb-6" />
+            )}
+            
             <InsightTable insights={stockData.insights} />
             <InsightTweets tweets={stockData.tweets} className="mt-6" />
           </div>

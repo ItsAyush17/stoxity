@@ -1,26 +1,35 @@
-
 import React from 'react';
 import { StockData } from '@/types';
 import { ChartContainer } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface StockPriceChartProps {
-  data: StockData;
+  data: any[];
+  className?: string;
 }
 
-const transformInsightsToChartData = (data: StockData) => {
-  // Transform financial insights into chart data
-  return data.insights.financials.map((item) => ({
-    name: item.metric,
-    value: parseFloat(item.value.replace(/[^0-9.-]/g, '')) || 0,
+const transformInsightsToChartData = (data: any[]) => {
+  // If data is already in the right format or empty, return it
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+
+  // Otherwise, transform it if needed
+  return data.map((item, index) => ({
+    name: item.name || item.date || `Point ${index + 1}`,
+    value: typeof item.value === 'number' ? item.value : parseFloat(item.value || '0'),
   })).filter(item => !isNaN(item.value));
 };
 
-export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data }) => {
-  const chartData = transformInsightsToChartData(data);
+export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data, className }) => {
+  const chartData = transformInsightsToChartData(data || []);
+  
+  if (!chartData.length) {
+    return null; // Don't render the chart if no data
+  }
 
   return (
-    <div className="w-full h-[300px] bg-white rounded-lg border-2 border-primary/20 p-4 mt-4 mb-6">
+    <div className={`w-full h-[300px] bg-white rounded-lg border-2 border-primary/20 p-4 mt-4 ${className || ''}`}>
       <h3 className="font-bold mb-4">Financial Metrics Chart</h3>
       <ChartContainer config={{
         line: {

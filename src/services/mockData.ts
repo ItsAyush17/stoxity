@@ -1,3 +1,4 @@
+
 import { StockData } from "@/types";
 
 // This is mock data until the API is implemented
@@ -22,9 +23,29 @@ export const generateMockData = (symbol: string): StockData => {
   
   const name = generateName(symbol);
   
+  // Generate mock price history data for the chart
+  const generatePriceHistory = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const priceData = [];
+    const startPrice = 100 + Math.random() * 200;
+    
+    for (let i = 0; i < 12; i++) {
+      const randomChange = (Math.random() - 0.4) * 20; // Slightly biased towards positive
+      const value = i === 0 ? startPrice : priceData[i-1].value * (1 + randomChange/100);
+      
+      priceData.push({
+        name: months[i],
+        value: parseFloat(value.toFixed(2))
+      });
+    }
+    
+    return priceData;
+  };
+  
   return {
     symbol: symbol.toUpperCase(),
     name,
+    priceHistory: generatePriceHistory(),
     insights: {
       financials: [
         {
