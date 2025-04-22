@@ -1,3 +1,3 @@
 
-// Re-export the functions from deepSeekService
-export { searchStocks, validateStockSymbol } from './deepSeekService';
+// Re-export the mock functions
+export { mockApiCall as fetchStockData, validateStockSymbol } from './mockData';
