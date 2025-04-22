@@ -1,9 +1,9 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { InsightItem } from "@/types";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 
 interface InsightTableProps {
   insights: {
@@ -14,8 +14,32 @@ interface InsightTableProps {
 }
 
 export const InsightTable: React.FC<InsightTableProps> = ({ insights }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-6">
+        {['financials', 'growth', 'risks'].map((section) => (
+          <Card key={section} className="border-2 border-primary/20 bg-white">
+            <CardContent className="p-4">
+              <LoadingSkeleton />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 animate-fade-in">
       <Card className="border-2 border-primary/20 bg-white">
         <CardContent className="p-0">
           <div className="bg-retro-blue/30 p-3 border-b border-primary/20">

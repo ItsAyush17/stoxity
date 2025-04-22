@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TweetInsight } from "@/types";
 import { FileText, Calendar, ChartBarIcon, AlertCircle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 
 interface InsightTweetsProps {
   tweets: TweetInsight[];
@@ -10,6 +11,36 @@ interface InsightTweetsProps {
 }
 
 export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets, className }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className={cn("space-y-6", className)}>
+        {['financial', 'growth', 'risk'].map((category) => (
+          <div key={category} className="space-y-4">
+            <h3 className="text-lg font-semibold capitalize flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {category} Insights
+            </h3>
+            <Card className="border-2">
+              <CardContent className="p-4">
+                <LoadingSkeleton />
+              </CardContent>
+            </Card>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   // Group tweets by category
   const groupedTweets = {
     financial: tweets.filter(tweet => tweet.category === "financial"),
@@ -44,7 +75,7 @@ export const InsightTweets: React.FC<InsightTweetsProps> = ({ tweets, className 
   };
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn("space-y-6 animate-fade-in", className)}>
       {Object.entries(groupedTweets).map(([category, categoryTweets]) => (
         <div key={category} className="space-y-4">
           <h3 className="text-lg font-semibold capitalize flex items-center gap-2">
