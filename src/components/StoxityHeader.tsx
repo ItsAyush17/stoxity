@@ -8,12 +8,12 @@ export const StoxityHeader = () => {
       <div className="container flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Terminal className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold font-retro tracking-wide bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-4xl font-pixel tracking-wide bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             STOXITY
           </h1>
         </div>
         <div className="flex gap-2 items-center">
-          <span className="font-mono text-xs px-2 py-1 bg-retro-gray rounded-md">BETA v0.1</span>
+          <span className="font-pixelify text-xs px-2 py-1 bg-retro-gray rounded-md">BETA v0.1</span>
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
         </div>
       </div>

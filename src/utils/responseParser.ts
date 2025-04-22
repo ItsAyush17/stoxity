@@ -1,5 +1,5 @@
 
-import { StockData, InsightItem } from "@/types";
+import { StockData, InsightItem, TweetInsight } from "@/types";
 
 export const extractDataFromResponse = (apiResponse: any, query: string): StockData => {
   try {
@@ -9,159 +9,167 @@ export const extractDataFromResponse = (apiResponse: any, query: string): StockD
       throw new Error("Invalid API response format");
     }
     
-    console.log("Raw content from API:", content);
+    console.log("Parsing content from API");
     
-    // Try to parse JSON from the response
-    // The AI might return JSON embedded in markdown or text, so we need to extract it
-    let jsonData;
-    try {
-      // First try: direct JSON parsing
-      jsonData = JSON.parse(content);
-    } catch (e) {
-      // Second try: extract JSON from markdown code blocks
-      const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-      if (jsonMatch && jsonMatch[1]) {
-        jsonData = JSON.parse(jsonMatch[1]);
-      } else {
-        // Third try: look for any object-like structure
-        const objectMatch = content.match(/\{[\s\S]*?\}/);
-        if (objectMatch) {
-          try {
-            jsonData = JSON.parse(objectMatch[0]);
-          } catch (e) {
-            throw new Error("Could not extract JSON from API response");
-          }
-        } else {
-          throw new Error("Could not extract JSON from API response");
-        }
-      }
-    }
+    // Extract company name and symbol
+    const companyName = extractCompanyName(content, query);
+    const symbol = query.toUpperCase();
     
-    console.log("Extracted JSON data:", jsonData);
+    // Extract structured data from the formatted markdown content
+    const financials = extractTableData(content);
+    const tweets = extractInsightsAndNews(content);
     
-    // Normalize ticker and name
-    const symbol = (jsonData.symbol || jsonData.ticker || query).toUpperCase();
-    const name = jsonData.name || jsonData.company_name || `${symbol}`;
-    
-    // Convert the parsed data to our StockData format
-    const stockData: StockData = {
+    return {
       symbol,
-      name,
+      name: companyName,
       insights: {
-        financials: parseInsightItems(jsonData.financials || jsonData.financial || jsonData.financial_metrics || []),
-        growth: parseInsightItems(jsonData.growth || jsonData.growth_metrics || jsonData.growth_indicators || []),
-        risks: parseInsightItems(jsonData.risks || jsonData.risk_factors || jsonData.risk_assessment || [])
+        financials: financials.slice(0, 2),
+        growth: financials.slice(2, 4),
+        risks: financials.slice(4)
       },
-      tweets: parseTweets(jsonData.news || jsonData.tweets || jsonData.insights || [])
+      tweets: tweets
     };
-    
-    return stockData;
   } catch (error) {
     console.error("Error parsing API response:", error);
-    // Fallback to a basic structure if parsing fails
-    return createFallbackStockData(query);
+    throw new Error(`Failed to parse stock data: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
-const parseInsightItems = (items: any[]): InsightItem[] => {
-  if (!Array.isArray(items)) {
-    return [];
+function extractCompanyName(content: string, defaultName: string): string {
+  // Try to extract company name from the content title
+  const titleMatch = content.match(/### \*\*📊 (.*?) Stock Snapshot/);
+  if (titleMatch && titleMatch[1]) {
+    return titleMatch[1].trim();
   }
+  return defaultName;
+}
+
+function extractTableData(content: string): InsightItem[] {
+  const insights: InsightItem[] = [];
   
-  return items.map(item => {
-    // Handle different possible property names
-    const metric = item.metric || item.name || item.factor || item.title || item.key || "Unknown";
-    const value = item.value || item.data || item.figure || "N/A";
-    const change = item.change || item.impact || item.delta || item.trend_value || "Unknown";
-    const trend = determineTrend(item.trend || item.direction || item.change || item.sentiment || item.movement);
+  // Find the table section
+  const tableSection = content.match(/### \*\*📊.*?\n\|.*?\|\n\|.*?\|([\s\S]*?)---/);
+  
+  if (tableSection && tableSection[1]) {
+    // Extract table rows (each row is a pipe-separated line)
+    const rows = tableSection[1].split('\n').filter(row => row.includes('|'));
     
-    return {
-      metric,
-      value,
-      change,
-      trend
-    };
-  }).slice(0, 5); // Limit to 5 items
-};
-
-const determineTrend = (trendValue: any): "up" | "down" | "neutral" => {
-  if (!trendValue) return "neutral";
-  
-  const trend = String(trendValue).toLowerCase();
-  if (trend.includes("up") || trend.includes("positive") || trend.includes("+") || trend.includes("increase") || trend.includes("growing") || trend.includes("bullish")) {
-    return "up";
-  } else if (trend.includes("down") || trend.includes("negative") || trend.includes("-") || trend.includes("decrease") || trend.includes("declining") || trend.includes("bearish")) {
-    return "down";
-  }
-  return "neutral";
-};
-
-const parseTweets = (newsItems: any[]) => {
-  if (!Array.isArray(newsItems)) {
-    return [];
-  }
-  
-  return newsItems.map((item, index) => {
-    // Try to determine the category
-    let categoryRaw = item.category || item.type || item.topic || "";
-    let category: "financial" | "growth" | "risk" = "financial";
-    
-    if (typeof categoryRaw === "string") {
-      const lowerCategory = categoryRaw.toLowerCase();
-      if (lowerCategory.includes("risk") || lowerCategory.includes("threat") || lowerCategory.includes("challenge")) {
-        category = "risk";
-      } else if (lowerCategory.includes("growth") || lowerCategory.includes("expansion") || lowerCategory.includes("opportunity")) {
-        category = "growth";
+    // Process each row to extract metrics
+    rows.forEach(row => {
+      const cells = row.split('|').filter(cell => cell.trim() !== '');
+      if (cells.length >= 3) {
+        const metric = cells[0].trim().replace(/\*\*/g, '');
+        const value = cells[1].trim();
+        
+        // Determine trend from the third column
+        let trend: "up" | "down" | "neutral" = "neutral";
+        const trendCell = cells[2].toLowerCase();
+        if (trendCell.includes('positive') || trendCell.includes('🔺')) {
+          trend = "up";
+        } else if (trendCell.includes('negative') || trendCell.includes('🔻')) {
+          trend = "down";
+        }
+        
+        insights.push({
+          metric,
+          value,
+          trend
+        });
       }
-    }
-    
-    // Determine the content
-    const content = item.content || item.text || item.description || item.headline || item.message || "No content available";
-    
-    // Generate a timestamp if none is provided
-    const timestamp = item.timestamp || item.date || item.time || item.published || generateRandomTimestamp();
-    
-    return {
-      id: `${category}-${Date.now()}-${index}`,
-      content,
-      category,
-      timestamp: typeof timestamp === "string" ? timestamp : generateRandomTimestamp()
-    };
-  });
-};
+    });
+  }
+  
+  return insights;
+}
 
-const generateRandomTimestamp = (): string => {
+function extractInsightsAndNews(content: string): TweetInsight[] {
+  const tweets: TweetInsight[] = [];
+  
+  // Extract Key Insights section
+  const insightsMatch = content.match(/### \*\*🔍 Key Insights \(Tweet-Style\)\*\*([\s\S]*?)---/);
+  if (insightsMatch && insightsMatch[1]) {
+    const insightsText = insightsMatch[1].trim();
+    const insightPoints = insightsText.split('\n').filter(line => line.trim().length > 0);
+    
+    // Process each insight point
+    insightPoints.forEach((point, index) => {
+      if (point.includes('️⃣')) {
+        tweets.push({
+          id: `insight-${Date.now()}-${index}`,
+          content: point.replace(/^\d️⃣ /, ''),
+          category: "growth",
+          timestamp: randomTimestamp()
+        });
+      }
+    });
+  }
+  
+  // Extract News Highlights section
+  const newsMatch = content.match(/### \*\*📰 Recent News Highlights\*\*([\s\S]*?)---/);
+  if (newsMatch && newsMatch[1]) {
+    const newsText = newsMatch[1].trim();
+    const newsPoints = newsText.split('\n').filter(line => line.startsWith('-'));
+    
+    // Process each news point
+    newsPoints.forEach((point, index) => {
+      tweets.push({
+        id: `news-${Date.now()}-${index}`,
+        content: point.replace(/^- /, ''),
+        category: "financial",
+        timestamp: `${extractNewsDate(point)} ago`
+      });
+    });
+  }
+  
+  // Extract Verdict section
+  const verdictMatch = content.match(/### \*\*🎯 Verdict\*\*:([\s\S]*?)(?:\*\*#|$)/);
+  if (verdictMatch && verdictMatch[1]) {
+    const verdictText = verdictMatch[1].trim();
+    
+    // Add verdict as a risk insight
+    tweets.push({
+      id: `verdict-${Date.now()}`,
+      content: `Verdict: ${verdictText.split('\n')[0].trim()}`,
+      category: "risk",
+      timestamp: "just now"
+    });
+    
+    // Add risks as separate entries
+    const risksMatch = verdictText.match(/\*\*Risks\*\*:(.*?)(?:\n\*\*|\n\n|$)/s);
+    if (risksMatch && risksMatch[1]) {
+      const risks = risksMatch[1].trim().split('\n- ').filter(r => r.trim() !== '');
+      risks.forEach((risk, index) => {
+        if (risk.trim().length > 0) {
+          tweets.push({
+            id: `risk-${Date.now()}-${index}`,
+            content: `Risk: ${risk.replace(/^- /, '')}`,
+            category: "risk",
+            timestamp: randomTimestamp()
+          });
+        }
+      });
+    }
+  }
+  
+  return tweets;
+}
+
+function extractNewsDate(newsPoint: string): string {
+  const dateMatch = newsPoint.match(/\*\*(.*?)\*\*/);
+  if (dateMatch && dateMatch[1]) {
+    // Convert month names to rough time periods
+    const datePart = dateMatch[1].toLowerCase();
+    if (datePart.includes('may')) return '2w';
+    if (datePart.includes('apr')) return '1m';
+    if (datePart.includes('mar')) return '2m';
+    if (datePart.includes('feb')) return '3m';
+    if (datePart.includes('jan')) return '4m';
+    return '1m';
+  }
+  return '1m';
+}
+
+function randomTimestamp(): string {
   const options = ["1h ago", "2h ago", "3h ago", "4h ago", "5h ago", "6h ago", "12h ago", "1d ago"];
   return options[Math.floor(Math.random() * options.length)];
-};
-
-const createFallbackStockData = (query: string): StockData => {
-  const symbol = query.toUpperCase();
-  return {
-    symbol,
-    name: symbol,
-    insights: {
-      financials: [
-        { metric: "Revenue", value: "Data unavailable", change: "N/A", trend: "neutral" },
-        { metric: "Net Income", value: "Data unavailable", change: "N/A", trend: "neutral" },
-        { metric: "EPS", value: "Data unavailable", change: "N/A", trend: "neutral" }
-      ],
-      growth: [
-        { metric: "YOY Growth", value: "Data unavailable", change: "N/A", trend: "neutral" },
-        { metric: "Market Share", value: "Data unavailable", change: "N/A", trend: "neutral" }
-      ],
-      risks: [
-        { metric: "Market Risk", value: "Data unavailable", change: "N/A", trend: "neutral" },
-        { metric: "Regulatory Risk", value: "Data unavailable", change: "N/A", trend: "neutral" }
-      ]
-    },
-    tweets: [
-      {
-        id: `fallback-${Date.now()}-1`,
-        content: `Unable to retrieve latest news for ${symbol}. Please check back later or try another search.`,
-        category: "financial",
-        timestamp: "now"
-      }
-    ]
-  };
-};
+}

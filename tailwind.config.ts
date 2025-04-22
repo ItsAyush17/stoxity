@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -21,6 +22,8 @@ export default {
 			fontFamily: {
 				mono: ['"IBM Plex Mono"', 'monospace'],
 				retro: ['"VT323"', 'monospace'],
+				pixel: ['"Press Start 2P"', 'cursive'],
+				pixelify: ['"Pixelify Sans"', 'sans-serif'],
 				sans: ['"Inter"', 'sans-serif'],
 			},
 			colors: {
