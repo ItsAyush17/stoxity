@@ -1,73 +1,87 @@
-# Welcome to your Lovable project
+Welcome to Stoxity
+Project Info
+URL: stoxity.js.org
 
-## Project info
+Repository: github.com/itsayush17/stoxity
 
-**URL**: https://lovable.dev/projects/dbb165c7-0def-4563-bf4a-8d37778854e1
+Stoxity is a retro-themed stock analysis web application engineered with a nostalgic pixel-art aesthetic, leveraging modern frontend technologies to deliver AI-powered financial insights. Built with a focus on responsive design and retro visual flourishes, Stoxity provides a unique blend of vintage terminal-style interfaces and cutting-edge stock analysis.
+Project Overview
+Stoxity is a single-page application (SPA) designed to offer users a seamless experience for querying and analyzing stock data. Key features include:
+Retro Pixel-Art Aesthetic: Utilizes pixel fonts, dashed borders, and gradient text to evoke a nostalgic 8-bit terminal vibe.
 
-## How can I edit this code?
+Stock Search Functionality: Enables users to query stock symbols or company names via an intuitive search interface.
 
-There are several ways of editing your application.
+Comprehensive Analysis: Displays stock data in a retro terminal-style UI, with support for tabular formats and social media-style insight cards.
 
-**Use Lovable**
+AI-Powered Insights: Integrates the DeepSeek API to generate predictive analytics and actionable insights derived from SEC filings and earnings reports.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/dbb165c7-0def-4563-bf4a-8d37778854e1) and start prompting.
+API Key Management: Implements a secure, client-side API key management system for user authentication and API access control.
 
-Changes made via Lovable will be committed automatically to this repo.
+Responsive Design: Ensures optimal rendering across all device breakpoints using Tailwind CSS's responsive utilities.
 
-**Use your preferred IDE**
+Visual Flourishes: Incorporates retro-inspired UI elements like CRT scanline effects, pixelated icons, and animated gradients.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+How Can I Edit This Code?
+There are multiple workflows for contributing to Stoxity's codebase, each tailored to different development preferences.
+1. Use Lovable (Web-Based Editing)
+Navigate to the Lovable Project Dashboard.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Leverage Lovable's prompt-driven interface to modify components, styles, or logic.
 
+Changes are automatically committed to the GitHub repository, ensuring version control consistency.
+
+2. Use Your Preferred IDE (Local Development)
+To work locally, clone the repository and set up the development environment. The only prerequisite is Node.js and npm, ideally managed via nvm for version stability.
 Follow these steps:
+bash
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Step 1: Clone the repository.
+git clone https://github.com/itsayush17/stoxity.git
 
 # Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+cd stoxity
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Step 3: Install dependencies.
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Launch the development server with hot-module replacement (HMR) and live preview.
 npm run dev
-```
 
-**Edit a file directly in GitHub**
+Edit files using your IDE of choice (e.g., VS Code, WebStorm). Push changes to the repository to sync updates with Lovable.
+3. Edit Directly in GitHub
+Navigate to the desired file in the GitHub repository.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Click the Edit button (pencil icon) in the file view.
 
-**Use GitHub Codespaces**
+Commit changes directly to the main branch or create a pull request for peer review.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Commits are automatically reflected in Lovable.
 
-## What technologies are used for this project?
+4. Use GitHub Codespaces
+From the repository's main page, click the Code button (green) and select the Codespaces tab.
 
-This project is built with:
+Click New Codespace to spin up a cloud-based development environment preconfigured with Stoxity's dependencies.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Edit files within the Codespace, then commit and push changes to the repository.
 
-## How can I deploy this project?
+What Technologies Power Stoxity?
+Stoxity is architected with a modern frontend stack optimized for performance and developer experience:
+Vite: A next-generation build tool and development server with lightning-fast HMR and ES module support.
 
-Simply open [Lovable](https://lovable.dev/projects/dbb165c7-0def-4563-bf4a-8d37778854e1) and click on Share -> Publish.
+TypeScript: Provides static typing for enhanced code reliability and maintainability.
 
-## Can I connect a custom domain to my Lovable project?
+React: Powers the component-based UI, enabling declarative rendering and state management.
 
-Yes, you can!
+shadcn-ui: A collection of accessible, customizable UI components tailored for rapid prototyping.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Tailwind CSS: A utility-first CSS framework for crafting responsive, retro-styled interfaces with minimal custom CSS.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+DeepSeek API: Integrates AI-driven financial analytics, processing SEC filings and earnings data for predictive insights.
+
+Additional dependencies include:
+Axios: For handling HTTP requests to the DeepSeek API and other external data sources.
+
+React Query: For efficient data fetching, caching, and synchronization of stock data.
+
+Vite PWA Plugin: Enables progressive web app (PWA) capabilities for offline access and native-like experiences.
+
