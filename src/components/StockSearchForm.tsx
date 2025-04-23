@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { stockSuggestions } from "@/data/stockSuggestions";
+import { CompanyNotFound } from "./CompanyNotFound";
 
 interface StockSearchFormProps {
   onSearch: (query: string) => void;
@@ -17,6 +18,7 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [showNotFound, setShowNotFound] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -25,6 +27,12 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
     stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
     stock.name.toLowerCase().includes(query.toLowerCase())
   ).slice(0, 8); // Limit to 8 suggestions
+
+  const isValidStock = (symbol: string): boolean => {
+    return stockSuggestions.some(stock => 
+      stock.symbol.toLowerCase() === symbol.toLowerCase()
+    );
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,7 +54,14 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
       });
       return;
     }
+
+    if (!isValidStock(query.trim())) {
+      setShowNotFound(true);
+      return;
+    }
+
     setShowSuggestions(false);
+    setShowNotFound(false);
     onSearch(query);
   };
 
@@ -64,6 +79,7 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
       if (selectedIndex > -1) {
         setQuery(filteredSuggestions[selectedIndex].symbol);
         setShowSuggestions(false);
+        setShowNotFound(false);
         onSearch(filteredSuggestions[selectedIndex].symbol);
       } else {
         handleSubmit(e);
@@ -78,7 +94,7 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
       <div className="text-center mb-6">
         <h2 className="text-2xl font-mono mb-2">Stock Analysis Terminal</h2>
         <p className="text-muted-foreground font-mono text-sm">
-          Enter any stock symbol or company name for AI-powered analysis
+          Search from our curated list of stocks for AI-powered analysis
         </p>
       </div>
       
@@ -94,10 +110,11 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
                   setQuery(e.target.value);
                   setShowSuggestions(true);
                   setSelectedIndex(-1);
+                  setShowNotFound(false);
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Search any stock symbol or company name..."
+                placeholder="Search for a stock from our suggestions..."
                 className="pl-10 font-mono border-2 bg-retro-yellow/30 focus:bg-white"
                 disabled={isLoading}
               />
@@ -118,6 +135,7 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
                     onClick={() => {
                       setQuery(stock.symbol);
                       setShowSuggestions(false);
+                      setShowNotFound(false);
                       onSearch(stock.symbol);
                     }}
                   >
@@ -152,6 +170,12 @@ export const StockSearchForm: React.FC<StockSearchFormProps> = ({
           </Button>
         </div>
       </form>
+
+      {showNotFound && (
+        <div className="mt-8">
+          <CompanyNotFound searchQuery={query} />
+        </div>
+      )}
     </div>
   );
 };
