@@ -21,7 +21,84 @@ Responsive Design: Ensures optimal rendering across all device breakpoints using
 
 Visual Flourishes: Incorporates retro-inspired UI elements like CRT scanline effects, pixelated icons, and animated gradients.
 
+# Stoxity
 
+Stoxity is an AI-powered stock analysis application that uses Google Gemini API to provide detailed insights about stocks.
+
+## Real-time Data with Google Gemini API
+
+This application uses Google Gemini API to fetch real-time stock data and analysis. To use this feature, you'll need to set up your Gemini API credentials.
+
+### Setting Up Google Gemini API
+
+1. **Create a Google Cloud account** if you don't already have one.
+2. **Get a Gemini API key**:
+   - Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Sign in with your Google account
+   - Click "Create API key" button
+   - Copy your API key
+
+3. **Configure the application**:
+   - Create a `.env` file in the root of the project
+   - Add your API key to the file:
+   ```
+   VITE_GEMINI_API_KEY=your_api_key_here
+   ```
+
+## Feature Flags
+
+You can control various aspects of the application by setting environment variables:
+
+```
+# Feature Flags
+VITE_USE_REAL_DATA=true  # Set to false to use mock data instead of real API calls
+VITE_ENABLE_CHARTS=true
+VITE_ENABLE_NEWS=true
+```
+
+## Development
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the development server:
+```bash
+npm run dev
+```
+
+## Building for Production
+
+```bash
+npm run build
+```
+
+## Tech Stack
+
+- React
+- TypeScript
+- Vite
+- TailwindCSS
+- Recharts
+- Google Gemini API
+- ShadcnUI
+
+## How It Works
+
+1. User searches for a stock symbol
+2. The application validates that the stock is in our suggestions list
+3. If valid, it queries the Google Gemini API with a carefully crafted prompt
+4. The API returns comprehensive stock information, which is then formatted and displayed
+5. If the API call fails, the app falls back to mock data
+
+## Mock vs. Real Data
+
+By default, the application uses real data from the Gemini API. If you'd like to use mock data instead (for testing or development), set `VITE_USE_REAL_DATA=false` in your `.env` file.
+
+## API Cost Considerations
+
+Note that the Google Gemini API has usage quotas and may incur costs if you exceed the free tier limits. For more information, see the [Gemini API pricing](https://ai.google.dev/pricing).
 
 # Step 1: Clone the repository.
 git clone https://github.com/itsayush17/stoxity.git
