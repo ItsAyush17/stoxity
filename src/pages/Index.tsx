@@ -10,7 +10,6 @@ import { fetchStockData } from "@/services/stockService";
 import { Loader2 } from "lucide-react";
 import { TypewriterText } from "@/components/TypewriterText";
 import { StockPriceChart } from "@/components/StockPriceChart";
-import CompanyOverview from "@/components/CompanyOverview";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -88,14 +87,10 @@ const Index = () => {
               </h3>
               <p className="text-sm text-muted-foreground">
                 <TypewriterText 
-                  text="Analysis based on latest SEC filings, earnings reports, and AI insights"
+                  text="Analysis based on latest SEC filings and earnings reports"
                   speed={100}
                 />
               </p>
-            </div>
-            
-            <div className="animate-fade-in">
-              <CompanyOverview data={stockData} />
             </div>
             
             {stockData.priceHistory && stockData.priceHistory.length > 0 && (
@@ -114,7 +109,7 @@ const Index = () => {
         
         <footer className="text-center text-xs text-muted-foreground mt-16 pt-4 border-t border-dashed">
           <p className="mb-1 font-mono">Stoxity - AI-powered stock insights from SEC filings & earnings calls</p>
-          <p className="font-mono">Powered by Google Gemini AI</p>
+          <p className="font-mono">Powered by DeepSeek AI</p>
         </footer>
       </main>
     </div>

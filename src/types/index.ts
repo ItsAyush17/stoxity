@@ -1,12 +1,6 @@
 export interface StockData {
   symbol: string;
   name: string;
-  industry?: string;
-  sector?: string;
-  marketCap?: number;
-  beta?: number;
-  dividendYield?: number;
-  description?: string;
   insights: {
     financials: InsightItem[];
     growth: InsightItem[];
@@ -33,10 +27,4 @@ export interface TweetInsight {
 export interface StockSuggestion {
   symbol: string;
   name: string;
-  sector?: string;
-  industry?: string;
-  marketCap?: number;
-  beta?: number;
-  dividendYield?: number;
-  description?: string;
 }
